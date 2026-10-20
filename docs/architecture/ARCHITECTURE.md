@@ -113,7 +113,7 @@ repowise/
 │   │   ├── src/repowise/core/
 │   │   │   ├── ingestion/
 │   │   │   │   ├── traverser.py        # file tree walking + gitignore + per-dir .repowiseIgnore + extra exclude patterns
-│   │   │   │   ├── parser.py           # ASTParser: one class, all languages; _extract_calls(), _extract_import_bindings()
+│   │   │   │   ├── parser/             # ASTParser: one class, all languages; one module per pass (symbols, imports, calls, references)
 │   │   │   │   ├── parsers/            # per-language parser helpers
 │   │   │   │   ├── graph.py            # NetworkX dep graph builder; add_file(), _resolve_calls(), file_subgraph()
 │   │   │   │   ├── call_resolver.py    # CallResolver: origin-stamped call resolution
@@ -1144,7 +1144,7 @@ Key routers:
 - `/api/webhooks/gitlab`: GitLab webhook handler
 - `/api/webhooks/gitea`: Gitea and Forgejo webhook handler with HMAC verification
 - `/api/repos/{id}/git-metadata`: per-file git metadata
-- `/api/repos/{id}/hotspots`: high-churn + high-complexity files
+- `/api/repos/{id}/hotspots`: hotspots ranked by temporal hotspot score; `q`, `filter`, `sort`/`order`, offset paging, `hold`/`include` (map scope) and `facets` counts over the searched set
 - `/api/repos/{id}/ownership`: ownership breakdown (file/module/package granularity)
 - `/api/repos/{id}/co-changes`: co-change partners for a file
 - `/api/repos/{id}/git-summary`: aggregate git health signals for dashboard
@@ -1579,7 +1579,7 @@ Key files:
 | `core/generation/editor_files/fetcher.py` | `EditorFileDataFetcher`, queries DB for architecture summary, modules, hotspots, decisions |
 | `core/generation/editor_files/tech_stack.py` | Filesystem scan for languages, frameworks, build commands |
 | `core/generation/editor_files/claude_md.py` | `ClaudeMdGenerator`, 30-line subclass that binds filename + template |
-| `core/generation/templates/claude_md.j2` | Jinja2 template for the Repowise-managed section |
+| `core/generation/templates/_editor_block.j2` | Jinja2 template for the Repowise-managed section |
 | `cli/commands/claude_md_cmd.py` | `repowise generate-claude-md` CLI command |
 | `server/routers/claude_md.py` | `GET/POST /api/repos/{id}/claude-md` REST endpoints |
 
@@ -1594,7 +1594,7 @@ each with the file it registers in and what you lose by skipping it.
 
 Two things worth knowing before you start:
 
-- **You never edit `parser.py` or `registry.py`.** Language identity goes in
+- **You never edit `parser/` or `registry.py`.** Language identity goes in
   `ingestion/languages/specs/<lang>.py` and is slotted into `ALL_SPECS`; parser
   configuration goes in `ingestion/language_configs.py`. The one unavoidable
   core edit is adding your tag to the `LanguageTag` Literal in

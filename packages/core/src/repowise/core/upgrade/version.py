@@ -89,6 +89,8 @@ STORE_FORMAT_VERSION: int = 2
 #: A Dart call chained on a call (``a.b().c()``) carries that inner call too,
 #: and a Dart function's signature carries its declared return type.
 #: A Kotlin function's signature carries its declared return type.
+#: A Kotlin call chained on a call (``a.b().c()``) is a call site and carries
+#: that inner call.
 #: Kotlin overloads and same-named extensions in one scope get their own ids
 #: the Java way, an extension's receiver leading its types
 #: (``toHexString#0(Byte)``, ``g#0(Int?)``), and a Kotlin trailing lambda counts as an
@@ -99,6 +101,9 @@ STORE_FORMAT_VERSION: int = 2
 #: DefaultRepository``), so a call through the alias reaches the repo class.
 #: A top-level Kotlin declaration keeps the annotations the grammar splits off
 #: it when the last one takes one argument (``@Suppress("unused")``).
+#: A top-level Kotlin declaration with two annotations (``@Preview @Composable
+#: private fun f()``) that the grammar read as an expression is re-parsed with its
+#: leading annotations blanked, so it becomes a symbol again.
 PARSER_SCHEMA_VERSION: int = 8
 
 #: state.json key holding the store format version that wrote the store.
